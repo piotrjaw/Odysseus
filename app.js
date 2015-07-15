@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 require('./models/Users');
 
-mongoose.connect('mongodb://localhost/odysseus');
+mongoose.connect('mongodb://localhost:27017/odysseus');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

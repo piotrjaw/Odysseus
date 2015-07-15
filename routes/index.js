@@ -20,8 +20,8 @@ router.get('/users', function(req, res, next) {
 router.post('/users', function(req, res, next) {
 	var user = new User(req.body);
 
-	user.save(function(err, post) {
-		if(err) {return next(err); }
+	user.save(function(err, post){
+		if(err){ return next(err); }
 
 		res.json(user);
 	});
