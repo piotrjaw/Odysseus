@@ -5,6 +5,11 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var mongoose = require('mongoose');
+require('./models/Users');
+
+mongoose.connect('mongodb://localhost/odysseus');
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
