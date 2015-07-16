@@ -3,16 +3,10 @@ var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 
 var UserSchema = new mongoose.Schema({
-<<<<<<< HEAD
 	username: {type: String, lowercase: true, unique: true},
 	email: {type: String, lowercase: true, unique: true},
 	hash: String,
 	salt: String
-=======
-	username: { type : String },
-	password: { type : String },
-	email: { type : String }
->>>>>>> origin/dev
 });
 
 
@@ -22,7 +16,7 @@ UserSchema.methods.setPassword = function(password) {
 	this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
 };
 
-UserSchema.methods.validatePassword = function(password) {
+UserSchema.methods.validPassword = function(password) {
 	var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
 
 	return this.hash === hash;

@@ -8,14 +8,10 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var passport = require('passport');
 
-<<<<<<< HEAD
-mongoose.connect('mongodb://localhost/odysseus');
+mongoose.connect('mongodb://localhost:27017/odysseus');
 require('./models/Users');
 
 require('./config/passport.js');
-=======
-mongoose.connect('mongodb://localhost:27017/odysseus');
->>>>>>> origin/dev
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
