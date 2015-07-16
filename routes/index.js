@@ -24,6 +24,7 @@ router.post('/register', function(req, res, next) {
 		return res.status(400).json({message: 'Proszę wypełnić wszystkie pola'});
 	}
 
+<<<<<<< HEAD
 	var user = new User();
 
 	user.username = req.body.username;
@@ -44,6 +45,9 @@ router.post('/login', function(req, res, next) {
 	}
 
 	passport.authenticate('local', function(err, user, info) {
+=======
+	user.save(function(err, post){
+>>>>>>> origin/dev
 		if(err){ return next(err); }
 
 		if(user){
