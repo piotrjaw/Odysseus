@@ -5,23 +5,16 @@ var passport = require('passport');
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
+var Polygon = mongoose.model('Polygon');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/users', function(req, res, next) {
-	User.find(function(err, users) {
-		if(err) {return next(err); }
-
-		res.json(users);
-	});
-});
-
 router.post('/register', function(req, res, next) {
 	if(!req.body.username || !req.body.password || !req.body.email) {
-		return res.status(400).json({message: 'ProszÄ™ wypeÅ‚niÄ‡ wszystkie pola'});
+		return res.status(400).json({message: 'Proszê wype³niæ wszystkie pola'});
 	}
 
 	var user = new User();
@@ -40,7 +33,7 @@ router.post('/register', function(req, res, next) {
 
 router.post('/login', function(req, res, next) {
 	if(!req.body.username || !req.body.password) {
-		return res.status(400).json({message: 'ProszÄ™ wypeÅ‚niÄ‡ wszystkie pola'});
+		return res.status(400).json({message: 'Proszê wype³niæ wszystkie pola'});
 	}
 
 	passport.authenticate('local', function(err, user, info) {
