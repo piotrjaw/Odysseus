@@ -7,9 +7,11 @@ var bodyParser = require('body-parser');
 
 var mongoose = require('mongoose');
 var passport = require('passport');
+var moment = require('moment');
 
 mongoose.connect('mongodb://localhost:27017/odysseus');
 require('./models/Users');
+require('./models/Polygons');
 
 require('./config/passport.js');
 

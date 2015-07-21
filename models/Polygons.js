@@ -5,18 +5,12 @@ var mongoose = require('mongoose');
 
 var PolygonSchema = new mongoose.Schema({
     name: String,
-    polygon: {
-        outerBondaryIs: {
-            linearRing: {
-                tesselate: Boolean,
-                coordinates: [{
-                    longtitude: Number,
-                    lattitude: Number,
-                    altitude: Number
-                }]
-            }
-        }
-    }
+	coordinates: [{
+		longtitude: Number,
+		lattitude: Number,
+		altitude: Number
+	}],
+	importDate: Date
 });
 
 mongoose.model('Polygon', PolygonSchema);
