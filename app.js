@@ -10,8 +10,8 @@ var passport = require('passport');
 var moment = require('moment');
 
 mongoose.connect('mongodb://localhost:27017/odysseus');
-require('./models/Users');
-require('./models/Polygons');
+require('./models/User');
+require('./models/Polygon');
 
 require('./config/passport.js');
 

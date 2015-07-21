@@ -3,14 +3,18 @@
  */
 var mongoose = require('mongoose');
 
-var PolygonSchema = new mongoose.Schema({
+var Schema = mongoose.Schema;
+
+var Point = new Schema({
+	longtitude: Number,
+	latitude: Number,
+	altitude: Number
+});
+
+var PolygonSchema = new Schema({
     name: String,
 	username: String,
-	coordinates: [{
-		longtitude: Number,
-		lattitude: Number,
-		altitude: Number
-	}],
+	coordinates: [Point],
 	importDate: Date
 });
 

@@ -3,6 +3,9 @@ var router = express.Router();
 
 var passport = require('passport');
 var moment = require('moment');
+var jwt = require('express-jwt');
+
+var auth = jwt({secret: 'MERKAVA', userProperty: 'payload'});
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
@@ -49,30 +52,47 @@ router.post('/login', function(req, res, next) {
 	})(req, res, next);
 });
 
-router.post('/importPoly', function(req, res, next) {
+router.post('/importPoly', auth, function(req, res, next) {
 	if(!req.body) {
 		return res.status(400).json({ message: 'Brak danych o obszarach.' });
 	}
 	
-	var entries = Array.prototype.slice.call(req.body.points, 0);
-	var username = req.body.username;
+	var entries = Array.prototype.slice.call(req.body.polygons, 0);
+	var username = req.payload.username;
 	var count = 0;
+
+	var errArr = [];
 	
 	entries.forEach(function(entry) {
 		var poly = new Polygon();
-		
+
 		poly.name = entry.name;
 		poly.username = username;
-		poly.coordinates = entry.polygon.outerBoundaryIs.linearRing.coordinates;
 		poly.importDate = moment();
+		poly.coordinates = [];
+
+		var coords = entry.coordinates.split(" ");
+
+		coords.forEach(function(coord) {
+			var tempPoint = coord.split(",");
+			var point = {
+				longtitude: tempPoint[0],
+				latitude: tempPoint[1],
+				altitude: tempPoint[2]
+			};
+			poly.coordinates.push(point);
+		});
+
+		count++;
 		
 		poly.save(function (err) {
-			if (err) return next(err);
+			errArr.push(err);
+			if (errArr.length === entries.length)
+			{
+				return res.status(200).json({ message: 'Wprowadzono dane ' + count + ' obszarów. ' });
+			}
 		});
-		count++;
 	});
-	
-	return res.status(200).json({ message: 'Wprowadzono dane ' + count + ' obszarów. ' });
 });
 
 module.exports = router;
