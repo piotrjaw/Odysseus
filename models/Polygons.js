@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 
 var PolygonSchema = new mongoose.Schema({
     name: String,
+	username: String,
 	coordinates: [{
 		longtitude: Number,
 		lattitude: Number,

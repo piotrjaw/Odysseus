@@ -54,17 +54,21 @@ router.post('/importPoly', function(req, res, next) {
 		return res.status(400).json({ message: 'Brak danych o obszarach.' });
 	}
 	
-	var entries = Array.prototype.slice.call(req.body, 0);
+	var entries = Array.prototype.slice.call(req.body.points, 0);
+	var username = req.body.username;
 	var count = 0;
 	
 	entries.forEach(function(entry) {
 		var poly = new Polygon();
 		
 		poly.name = entry.name;
+		poly.username = username;
 		poly.coordinates = entry.polygon.outerBoundaryIs.linearRing.coordinates;
 		poly.importDate = moment();
 		
-		poly.save();
+		poly.save(function (err) {
+			if (err) return next(err);
+		});
 		count++;
 	});
 	
