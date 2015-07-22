@@ -74,13 +74,13 @@ router.post('/importPoly', auth, function(req, res, next) {
 		var coords = entry.coordinates.split(" ");
 
 		coords.forEach(function(coord) {
-			var tempPoint = coord.split(",");
-			var point = {
+			var coordinateString = coord.split(",");
+			var coordinates = {
 				longtitude: tempPoint[0],
 				latitude: tempPoint[1],
 				altitude: tempPoint[2]
 			};
-			poly.coordinates.push(point);
+			poly.coordinates.push(coordinates);
 		});
 
 		count++;

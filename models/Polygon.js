@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 
-var Point = new Schema({
+var Coordinate = new Schema({
 	longtitude: Number,
 	latitude: Number,
 	altitude: Number
@@ -14,7 +14,7 @@ var Point = new Schema({
 var PolygonSchema = new Schema({
     name: String,
 	username: String,
-	coordinates: [Point],
+	coordinates: [Coordinate],
 	importDate: Date
 });
 
