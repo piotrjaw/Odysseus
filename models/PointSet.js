@@ -2,15 +2,14 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 
-var Coordinate = new Schema({
-	longtitude: Number,
-	latitude: Number,
-	altitude: Number
-});
-
 var Point = new Schema({
 	address: String,
-	coordinates: [Coordinate]
+	formattedAddress: String,
+	placeId: String,
+	coordinates: {
+		longtitude: Number,
+		latitude: Number
+	}
 });
 
 var PointSetSchema = new Schema({

@@ -4,12 +4,13 @@ var router = express.Router();
 var passport = require('passport');
 var moment = require('moment');
 var jwt = require('express-jwt');
+var qs = require('querystring');
+
+var functions = require('../functions.js');
 
 var auth = jwt({secret: 'MERKAVA', userProperty: 'payload'});
 
 var mongoose = require('mongoose');
-
-var functions = require('../functions.js');
 
 var User = mongoose.model('User');
 var Polygon = mongoose.model('Polygon');
@@ -36,7 +37,7 @@ router.post('/register', function(req, res, next) {
 	user.save(function(err) {
 		if(err) { return next(err); }
 
-		return res.json({ token: user.generateJWT() });
+		return res.status(200).json({ token: user.generateJWT() });
 	});
 });
 
@@ -80,22 +81,39 @@ router.post('/importPolygons', auth, function(req, res, next) {
 	});
 });
 
-router.post('/importPoints', function(req, res, next) {
+router.post('/importPoints', auth, function(req, res, next) {
 	if (!req.body.points) { return res.status(400).json({ message: 'Brak danych o punktach.' }) }
 	
 	var entries = Array.prototype.slice.call(req.body.points, 0);
 	
-	var errorArray = [];
-	
 	var pointSet = new PointSet();
 	pointSet.username = req.payload.username;
 	pointSet.filename = req.filename;
-	
+
+	var resultCheck = [];
+
 	entries.forEach(function(entry) {
-		var point = {
-			address: entry.address,
-			coordinates: []
-		};
+
+		functions.geocode(entry.address, function ( data ) {
+			var point = {
+				address: entry.address,
+				formattedAddress: data.results.formatted_address,
+				coordinates: {
+					latitude: data.results.geometry.location.lat,
+					longtitude: data.results.geometry.location.long
+				},
+				placeId: data.results.place_id
+			};
+
+			pointSet.push(point);
+			resultCheck.push(data);
+		});
+	});
+
+	pointSet.save(function(err) {
+		if(err) { return next(err); }
+
+		return res.status(200).json(resultCheck);
 	});
 	
 });
