@@ -8,10 +8,15 @@ var Coordinate = new Schema({
 	altitude: Number
 });
 
-var PointSchema = new Schema({
-	filename: String,
+var Point = new Schema({
 	address: String,
 	coordinates: [Coordinate]
 });
 
-mongoose.model('Point', PointSchema);
+var PointSetSchema = new Schema({
+	username: String,
+	filename: String,
+	points: [Point]	
+});
+
+mongoose.model('PointSet', PointSetSchema);

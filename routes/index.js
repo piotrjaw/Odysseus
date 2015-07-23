@@ -8,8 +8,12 @@ var jwt = require('express-jwt');
 var auth = jwt({secret: 'MERKAVA', userProperty: 'payload'});
 
 var mongoose = require('mongoose');
+
+var functions = require('../functions.js');
+
 var User = mongoose.model('User');
 var Polygon = mongoose.model('Polygon');
+var PointSet = mongoose.model('PointSet');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -52,47 +56,48 @@ router.post('/login', function(req, res, next) {
 	})(req, res, next);
 });
 
-router.post('/importPoly', auth, function(req, res, next) {
-	if(!req.body) {
-		return res.status(400).json({ message: 'Brak danych o obszarach.' });
-	}
+router.post('/importPolygons', auth, function(req, res, next) {
+	if(!req.body.polygons) { return res.status(400).json({ message: 'Brak danych o obszarach.' }) }
 	
 	var entries = Array.prototype.slice.call(req.body.polygons, 0);
-	var username = req.payload.username;
-	var count = 0;
 
-	var errArr = [];
+	var errorArray = [];
 	
 	entries.forEach(function(entry) {
-		var poly = new Polygon();
+		var polygon = new Polygon();
 
-		poly.name = entry.name;
-		poly.username = username;
-		poly.importDate = moment();
-		poly.coordinates = [];
+		polygon.name = entry.name;
+		polygon.username = req.payload.username;
+		polygon.importDate = moment();
+		polygon.coordinates = [];
 
-		var coords = entry.coordinates.split(" ");
-
-		coords.forEach(function(coord) {
-			var coordinateString = coord.split(",");
-			var coordinates = {
-				longtitude: tempPoint[0],
-				latitude: tempPoint[1],
-				altitude: tempPoint[2]
-			};
-			poly.coordinates.push(coordinates);
-		});
-
-		count++;
+		polygon.getPolygonCoordinates(entry.coordinates);
 		
-		poly.save(function (err) {
-			errArr.push(err);
-			if (errArr.length === entries.length)
-			{
-				return res.status(200).json({ message: 'Wprowadzono dane ' + count + ' obszarów. ' });
-			}
+		polygon.save(function (err) {
+			errorArray.push(err);
+			if (errorArray.length === entries.length) { return res.status(200).json({ message: 'OK' }) }
 		});
 	});
+});
+
+router.post('/importPoints', function(req, res, next) {
+	if (!req.body.points) { return res.status(400).json({ message: 'Brak danych o punktach.' }) }
+	
+	var entries = Array.prototype.slice.call(req.body.points, 0);
+	
+	var errorArray = [];
+	
+	var pointSet = new PointSet();
+	pointSet.username = req.payload.username;
+	pointSet.filename = req.filename;
+	
+	entries.forEach(function(entry) {
+		var point = {
+			address: entry.address,
+			coordinates: []
+		};
+	});
+	
 });
 
 module.exports = router;
