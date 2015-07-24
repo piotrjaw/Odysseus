@@ -4,9 +4,17 @@ var router = express.Router();
 var passport = require('passport');
 var moment = require('moment');
 var jwt = require('express-jwt');
-var qs = require('querystring');
+var async = require('async');
 
-var functions = require('../functions.js');
+var geocoderProvider = 'google';
+var httpAdapter = 'https';
+
+var extra = {
+	apiKey: 'AIzaSyCf_VWbxCEZ8oWepMe92tfUWXhJz6xd2fY',
+	formatter: null
+};
+
+var geocoder = require('node-geocoder')(geocoderProvider, httpAdapter, extra);
 
 var auth = jwt({secret: 'MERKAVA', userProperty: 'payload'});
 
@@ -84,36 +92,38 @@ router.post('/importPolygons', auth, function(req, res, next) {
 router.post('/importPoints', auth, function(req, res, next) {
 	if (!req.body.points) { return res.status(400).json({ message: 'Brak danych o punktach.' }) }
 	
-	var entries = Array.prototype.slice.call(req.body.points, 0);
+	var entries = Array.prototype.slice.call(req.body.points);
 	
 	var pointSet = new PointSet();
 	pointSet.username = req.payload.username;
-	pointSet.filename = req.filename;
+	pointSet.filename = req.body.filename;
+	pointSet.importDate = moment();
 
 	var resultCheck = [];
+	var errorArray = [];
 
-	entries.forEach(function(entry) {
-
-		functions.geocode(entry.address, function ( data ) {
+	async.each(entries, function(entry, callback) {
+		
+		geocoder.geocode(entry.address, function(err, res) {
+			resultCheck.push(res);
 			var point = {
 				address: entry.address,
-				formattedAddress: data.results.formatted_address,
 				coordinates: {
-					latitude: data.results.geometry.location.lat,
-					longtitude: data.results.geometry.location.long
-				},
-				placeId: data.results.place_id
+						latitude: res.latitude,
+						longtitude: res.longtitude
+				}
 			};
-
-			pointSet.push(point);
-			resultCheck.push(data);
+			pointSet.points.push(point);
+			callback();
+		}, function(err) {
+			if(err) { errorArray.push(err); }
 		});
 	});
 
 	pointSet.save(function(err) {
 		if(err) { return next(err); }
 
-		return res.status(200).json(resultCheck);
+		return res.status(200).json([resultCheck, errorArray]);
 	});
 	
 });

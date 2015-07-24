@@ -1,6 +1,3 @@
-var request = require('request-promise');
-var _ = require('underscore');
-
 exports.getCoordinates = function(target, source) {
 	var coords = String.prototype.split.call(source, " ");
 	
@@ -12,19 +9,5 @@ exports.getCoordinates = function(target, source) {
 			altitude: coordinateArray[2]
 		};
 		target.coordinates.push(coordinates);
-	});
-};
-
-exports.geocode = function (location, callback) {
-
-	var options = {address: location, key: 'AIzaSyCf_VWbxCEZ8oWepMe92tfUWXhJz6xd2fY'};
-	var uri = 'https://maps.googleapis.com/maps/api/geocode/json';
-
-	request({
-		uri: uri,
-		qs: options
-	}).then(function (response) {
-		var result = JSON.parse(response);
-		callback(result);
 	});
 };

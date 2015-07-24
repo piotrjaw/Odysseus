@@ -4,8 +4,8 @@ var Schema = mongoose.Schema;
 
 var Point = new Schema({
 	address: String,
-	formattedAddress: String,
-	placeId: String,
+//	formattedAddress: String,
+//	placeId: String,
 	coordinates: {
 		longtitude: Number,
 		latitude: Number
@@ -15,6 +15,7 @@ var Point = new Schema({
 var PointSetSchema = new Schema({
 	username: String,
 	filename: String,
+	importDate: Date,
 	points: [Point]	
 });
 
