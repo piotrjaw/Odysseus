@@ -102,7 +102,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 	var resultCheck = [];
 	var errorArray = [];
 
-	async.each(entries, function(entry, callback) {
+/*	async.each(entries, function(entry, callback) {
 		
 		geocoder.geocode(entry.address, function(err, res) {
 			resultCheck.push(res);
@@ -118,6 +118,25 @@ router.post('/importPoints', auth, function(req, res, next) {
 		}, function(err) {
 			if(err) { errorArray.push(err); }
 		});
+	});*/
+	
+	async.each(entries, function (entry, callback) {
+		geocoder.geocode(entry.address, function (result, status) {
+			resultCheck.push(result);
+			var point = {
+				address: entry.address,
+				coordinates: {
+					latitude: result.latitude,
+					longtitude: result.longtitude
+				}
+			};
+			pointSet.points.push(point);
+			callback();
+		});
+	}, function (err) {
+		if (err) {
+			errorArray.push(err);
+		}
 	});
 
 	pointSet.save(function(err) {
