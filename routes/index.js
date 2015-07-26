@@ -102,7 +102,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 	var resultCheck = [];
 	var errorArray = [];
 
-/*	async.each(entries, function(entry, callback) {
+	async.each(entries, function(entry, callback) {
 		
 		geocoder.geocode(entry.address, function(err, res) {
 			resultCheck.push(res);
@@ -114,29 +114,9 @@ router.post('/importPoints', auth, function(req, res, next) {
 				}
 			};
 			pointSet.points.push(point);
-			callback();
 		}, function(err) {
 			if(err) { errorArray.push(err); }
 		});
-	});*/
-	
-	async.each(entries, function (entry, callback) {
-		geocoder.geocode(entry.address, function (result, status) {
-			resultCheck.push(result);
-			var point = {
-				address: entry.address,
-				coordinates: {
-					latitude: result.latitude,
-					longtitude: result.longtitude
-				}
-			};
-			pointSet.points.push(point);
-			callback();
-		});
-	}, function (err) {
-		if (err) {
-			errorArray.push(err);
-		}
 	});
 
 	pointSet.save(function(err) {
@@ -145,6 +125,13 @@ router.post('/importPoints', auth, function(req, res, next) {
 		return res.status(200).json([resultCheck, errorArray]);
 	});
 	
+});
+
+router.post('/geoTest', function(req, res, next) {
+	geocoder.geocode('ul. dywizjonu 303 149b warszawa, polska', function (result, status) {
+		res.status(200).json([result, status]);
+	}, function (err) {
+	});
 });
 
 module.exports = router;
