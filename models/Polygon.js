@@ -7,7 +7,7 @@ var functions = require('../functions.js');
 var Schema = mongoose.Schema;
 
 var Coordinate = new Schema({
-	longtitude: Number,
+	longitude: Number,
 	latitude: Number,
 	altitude: Number
 });
