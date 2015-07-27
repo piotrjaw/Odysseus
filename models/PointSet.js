@@ -4,10 +4,10 @@ var Schema = mongoose.Schema;
 
 var Point = new Schema({
 	address: String,
-	formattedAddress: String,
-	placeId: String,
+//	formattedAddress: String,
+//	placeId: String,
 	coordinates: {
-		longitude: Number,
+		longtitude: Number,
 		latitude: Number
 	}
 });

@@ -8,8 +8,6 @@ var async = require('async');
 
 var config = require('../config.json');
 
-var gr = require('../googleRequests.js');
-
 var geocoderProvider = 'google';
 var httpAdapter = 'https';
 
@@ -24,11 +22,6 @@ var auth = jwt({secret: config.secret, userProperty: 'payload'});
 
 var mongoose = require('mongoose');
 
-var Promise = require('bluebird');
-
-var geocodeAsync = Promise.promisify(require('../googleRequests.js').geocode);
-var eachSeriesAsync = Promise.promisify(require('async').eachSeries);
-
 var User = mongoose.model('User');
 var Polygon = mongoose.model('Polygon');
 var PointSet = mongoose.model('PointSet');
@@ -38,7 +31,6 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-/* POST - register new user */
 router.post('/register', function(req, res, next) {
 	if(!req.body.username || !req.body.password || !req.body.email) {
 		return res.status(400).json({message: 'Proszê wype³niæ wszystkie pola.'});
@@ -59,7 +51,6 @@ router.post('/register', function(req, res, next) {
 	});
 });
 
-/* POST - login */
 router.post('/login', function(req, res, next) {
 	if(!req.body.username || !req.body.password) {
 		return res.status(400).json({message: 'Proszê wype³niæ wszystkie pola.'});
@@ -76,7 +67,6 @@ router.post('/login', function(req, res, next) {
 	})(req, res, next);
 });
 
-/* POST user's polygon set */
 router.post('/importPolygons', auth, function(req, res, next) {
 	if(!req.body.polygons) { return res.status(400).json({ message: 'Brak danych o obszarach.' }) }
 	
@@ -101,7 +91,6 @@ router.post('/importPolygons', auth, function(req, res, next) {
 	});
 });
 
-/* POST user's point set */
 router.post('/importPoints', auth, function(req, res, next) {
 	if (!req.body.points) { return res.status(400).json({ message: 'Brak danych o punktach.' }) }
 	
@@ -111,38 +100,39 @@ router.post('/importPoints', auth, function(req, res, next) {
 	pointSet.username = req.payload.username;
 	pointSet.filename = req.body.filename;
 	pointSet.importDate = moment();
-	
-	var data = null;
 
-	eachSeriesAsync(entries, function (entry, callback) {
-	
-		if(data) {
+	var resultCheck = [];
+	var errorArray = [];
+
+	async.each(entries, function(entry, callback) {
+		
+		geocoder.geocode(entry.address, function(err, res) {
+			resultCheck.push(res);
 			var point = {
 				address: entry.address,
-				coordinates: {	
-					longitude: data.longitude,
-					latitude: data.latitude
-				},
-				placeId: data.extra.googlePlaceId,
-				formattedAddress: data.formattedAddress
+				coordinates: {
+						latitude: res.latitude,
+						longtitude: res.longtitude
+				}
 			};
 			pointSet.points.push(point);
-			callback(null, data);
-		} else {
-			data = gr.geocode(entry.address);
-		}
+		}, function(err) {
+			if(err) { errorArray.push(err); }
+		});
+	});
+
+	pointSet.save(function(err) {
+		if(err) { return next(err); }
+
+		return res.status(200).json([resultCheck, errorArray]);
+	});
 	
-	}, function(err, data) {
-		if (err) {
-			console.log('Error');
-		} else {
-			console.log('No errors encountered' + data);
-		}
-	}).then(function() {
-		pointSet.save(function (err) { console.log(err); });
-		return res.status(200).json(pointSet);
-	}).then(function(err) {
-		console.log(err);
+});
+
+router.post('/geoTest', function(req, res, next) {
+	geocoder.geocode('ul. dywizjonu 303 149b warszawa, polska', function (result, status) {
+		res.status(200).json([result, status]);
+	}, function (err) {
 	});
 });
 

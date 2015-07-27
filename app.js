@@ -67,6 +67,5 @@ app.use(function(err, req, res, next) {
   });
 });
 
-global.geocodingQueue = [];
 
 module.exports = app;
