@@ -6,17 +6,19 @@ var moment = require('moment');
 var jwt = require('express-jwt');
 var async = require('async');
 
+var config = require('../config.json');
+
 var geocoderProvider = 'google';
 var httpAdapter = 'https';
 
 var extra = {
-	apiKey: 'AIzaSyCf_VWbxCEZ8oWepMe92tfUWXhJz6xd2fY',
+	apiKey: config.googleApiKey,
 	formatter: null
 };
 
 var geocoder = require('node-geocoder')(geocoderProvider, httpAdapter, extra);
 
-var auth = jwt({secret: 'MERKAVA', userProperty: 'payload'});
+var auth = jwt({secret: config.secret, userProperty: 'payload'});
 
 var mongoose = require('mongoose');
 

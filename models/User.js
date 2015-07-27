@@ -2,6 +2,8 @@ var mongoose = require('mongoose');
 var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 
+var config = require('../config.json')
+
 var UserSchema = new mongoose.Schema({
 	username: {type: String, lowercase: true, unique: true},
 	email: {type: String, lowercase: true, unique: true},
@@ -33,7 +35,7 @@ UserSchema.methods.generateJWT = function() {
 		_id: this._id,
 		username: this.username,
 		exp: parseInt(exp.getTime() / 1000)
-	}, 'MERKAVA');
+	}, config.secret);
 };
 
 mongoose.model('User', UserSchema);
