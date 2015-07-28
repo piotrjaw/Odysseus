@@ -116,33 +116,33 @@ router.post('/importPoints', auth, function(req, res, next) {
 
 	eachSeriesAsync(entries, function (entry, callback) {
 	
-		if(data) {
-			var point = {
-				address: entry.address,
-				coordinates: {	
-					longitude: data.longitude,
-					latitude: data.latitude
-				},
-				placeId: data.extra.googlePlaceId,
-				formattedAddress: data.formattedAddress
-			};
-			pointSet.points.push(point);
-			callback(null, data);
-		} else {
-			data = gr.geocode(entry.address);
-		}
+		data = gr.geocode(entry.address);
+
+		console.log(data);
+		
+		var point = {
+			address: entry.address,
+			coordinates: {	
+				longitude: data.longitude,
+				latitude: data.latitude
+			},
+			placeId: data.extra.googlePlaceId,
+			formattedAddress: data.formattedAddress
+		};
+		pointSet.points.push(point);
+		callback(null, data);
 	
 	}, function(err, data) {
 		if (err) {
-			console.log('Error');
+			/*console.log('Error');*/
 		} else {
-			console.log('No errors encountered' + data);
+			/*console.log('No errors encountered' + data);*/
 		}
 	}).then(function() {
-		pointSet.save(function (err) { console.log(err); });
+		pointSet.save(function (err) { /*console.log(err);*/ });
 		return res.status(200).json(pointSet);
 	}).then(function(err) {
-		console.log(err);
+		/*console.log(err);*/
 	});
 });
 

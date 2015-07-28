@@ -13,6 +13,8 @@ var extra = {
 var geocoder = require('node-geocoder')(geocoderProvider, httpAdapter, extra);
 
 exports.geocode = function(address) {
+	/* PONIŻEJ DODAĆ KOLEJKOWANIE
+	
 	global.geocodingQueue.push(address);
 	
 	var queueTime = false;
@@ -26,16 +28,16 @@ exports.geocode = function(address) {
 		}; 
 	}, 200);
 	
-	geocodingQueue.splice(0, 1);
+	geocodingQueue.splice(0, 1);*/
 	
 	var result = null;
 	
 	var query = geocoder.geocode(address)
 		.then(function(res) {
-			return res[0];
+			return(res[0]);
 		})
 		.then(function(err) {
-			console.error(err)
+			return(err);
 		});
 		
 };
