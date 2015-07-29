@@ -6,6 +6,8 @@ var moment = require('moment');
 var jwt = require('express-jwt');
 var async = require('async');
 
+var inside = require('point-in-polygon');
+
 var config = require('../config.json');
 
 var gr = require('../googleRequests.js');
@@ -112,42 +114,70 @@ router.post('/importPoints', auth, function(req, res, next) {
 	pointSet.filename = req.body.filename;
 	pointSet.importDate = moment();
 	
-	var data = null;
+	Polygon.find({
+		'username': req.payload.username
+	}).then(function (result) {
+		var polygons = result;
 
-	eachSeriesAsync(entries, function (entry, callback) {
-	
-//      code for queueing service
-//		data = gr.geocode(entry.address);
+		eachSeriesAsync(entries, function (entry, callback) {
+		
+	//      code for queueing service
+	//		data = gr.geocode(entry.address);
 
-		geocoder.geocode(entry.address)
-			.then(function(data) {
-				var point = {
-					address: entry.address,
-					coordinates: {
-						longitude: data[0].longitude,
-						latitude: data[0].latitude
-					},
-					placeId: data[0].extra.googlePlaceId,
-					formattedAddress: data[0].formattedAddress
-				};
-				pointSet.points.push(point);
-				if (pointSet.points.length === entries.length) {
-					pointSet.save(function (err) { /*console.log(err);*/ });
-					return res.status(200).json(pointSet);
-				}
-			}, function(err) {
-				console.log(err)
-			});
+			geocoder.geocode(entry.address)
+				.then(function(data) {
+					var point = {
+						address: entry.address,
+						coordinates: {
+							latitude: data[0].latitude,
+							longitude: data[0].longitude
+						},
+						placeId: data[0].extra.googlePlaceId,
+						formattedAddress: data[0].formattedAddress
+					};
+					polygons.forEach(function(polygon) {
+						var formattedPolygon = [];
+						polygon.coordinates.forEach(function(coordinate) {
+							formattedPolygon.push([coordinate.latitude, coordinate.longitude]);
+						});
+						if(inside([point.coordinates.latitude, point.coordinates.longitude], formattedPolygon)) {
+							point.polygon = polygon;
+						};
+					});
+					pointSet.points.push(point);
+					if (pointSet.points.length === entries.length) {
+						pointSet.save(function (err) { /*console.log(err);*/ });
+						return res.status(200).json(pointSet);
+					}
+				}, function(err) {
+					console.log(err)
+				});
 
-		callback();
-	
-	}, function(err, data) {
-		if (err) {
-			/*console.log('Error');*/
-		} else {
-			console.log('All done');
-		}
+			callback();
+		
+		}, function(err, data) {
+			if (err) {
+				/*console.log('Error');*/
+			} else {
+				console.log('All done');
+			}
+		});
+		
+	}, function (err) {
+		console.log(err);
 	});
+
+});
+
+/* TEST ROUTE: GET pointSets */
+router.get('/getPointSets', function(req, res, next) {
+	PointSet
+		.find()
+		.populate('points.polygon')
+		.exec(function(err, pointsets) {
+			if(err){ return next(err); }
+			res.json(pointsets);
+	})
 });
 
 module.exports = router;

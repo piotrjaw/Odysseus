@@ -7,9 +7,10 @@ var Point = new Schema({
 	formattedAddress: String,
 	placeId: String,
 	coordinates: {
-		longitude: Number,
-		latitude: Number
-	}
+		latitude: Number,
+		longitude: Number
+	},
+	polygon: { type: Schema.Types.ObjectId, ref: 'Polygon' }
 });
 
 var PointSetSchema = new Schema({

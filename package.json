@@ -22,6 +22,7 @@
     "node-geocoder": "^2.22.0",
     "passport": "^0.2.2",
     "passport-local": "^1.0.0",
+    "point-in-polygon": "^1.0.0",
     "request": "^2.60.0",
     "serve-favicon": "~2.3.0"
   }
