@@ -5,8 +5,19 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var mongoose = require('mongoose');
+var passport = require('passport');
+var moment = require('moment');
+
+mongoose.connect('mongodb://localhost:27017/odysseus');
+
+require('./models/User');
+require('./models/Polygon');
+require('./models/PointSet');
+
+require('./config/passport.js');
+
 var routes = require('./routes/index');
-var users = require('./routes/users');
 
 var app = express();
 
@@ -21,9 +32,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
 
 app.use('/', routes);
-app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -56,5 +67,6 @@ app.use(function(err, req, res, next) {
   });
 });
 
+global.geocodingQueue = [];
 
 module.exports = app;
