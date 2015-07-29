@@ -116,33 +116,37 @@ router.post('/importPoints', auth, function(req, res, next) {
 
 	eachSeriesAsync(entries, function (entry, callback) {
 	
-		data = gr.geocode(entry.address);
+//      code for queueing service
+//		data = gr.geocode(entry.address);
 
-		console.log(data);
-		
-		var point = {
-			address: entry.address,
-			coordinates: {	
-				longitude: data.longitude,
-				latitude: data.latitude
-			},
-			placeId: data.extra.googlePlaceId,
-			formattedAddress: data.formattedAddress
-		};
-		pointSet.points.push(point);
-		callback(null, data);
+		geocoder.geocode(entry.address)
+			.then(function(data) {
+				var point = {
+					address: entry.address,
+					coordinates: {
+						longitude: data[0].longitude,
+						latitude: data[0].latitude
+					},
+					placeId: data[0].extra.googlePlaceId,
+					formattedAddress: data[0].formattedAddress
+				};
+				pointSet.points.push(point);
+				if (pointSet.points.length === entries.length) {
+					pointSet.save(function (err) { /*console.log(err);*/ });
+					return res.status(200).json(pointSet);
+				}
+			}, function(err) {
+				console.log(err)
+			});
+
+		callback();
 	
 	}, function(err, data) {
 		if (err) {
 			/*console.log('Error');*/
 		} else {
-			/*console.log('No errors encountered' + data);*/
+			console.log('All done');
 		}
-	}).then(function() {
-		pointSet.save(function (err) { /*console.log(err);*/ });
-		return res.status(200).json(pointSet);
-	}).then(function(err) {
-		/*console.log(err);*/
 	});
 });
 
