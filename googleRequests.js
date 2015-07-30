@@ -1,5 +1,3 @@
-var moment = require('moment');
-
 var config = require('./config.json');
 
 var geocoderProvider = 'google';
@@ -13,32 +11,14 @@ var extra = {
 var geocoder = require('node-geocoder')(geocoderProvider, httpAdapter, extra);
 
 exports.geocode = function(address) {
-	/* PONIŻEJ DODAĆ KOLEJKOWANIE
-	
-	global.geocodingQueue.push(address);
-	
-	var queueTime = false;
-	
-	var run = setInterval(function() { 
-		function checkQueue(givenAddress) {
-			if (givenAddress === geocodingQueue[0]) {
-				this.queueTime = true;
-				clearInterval(run);
-			}
-		}; 
-	}, 200);
-	
-	geocodingQueue.splice(0, 1);*/
-	
-	var result = null;
-	
-	var query = geocoder.geocode(address)
-		.then(function(res) {
-			return(res[0]);
-		})
-		.then(function(err) {
-			return(err);
-		});
-		 
+	/* PONIŻEJ DODAĆ KOLEJKOWANIE*/
 };
 
+exports.asyncGeocode = function(address) {
+	return new Promise(function(resolve, reject){
+		resolve(geocoder.geocode(address)
+			.then(function(res){
+				return(res[0]);
+			}));
+	});
+};

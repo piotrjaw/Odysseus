@@ -4,7 +4,6 @@ var router = express.Router();
 var passport = require('passport');
 var moment = require('moment');
 var jwt = require('express-jwt');
-var async = require('async');
 
 var inside = require('point-in-polygon');
 
@@ -12,23 +11,11 @@ var config = require('../config.json');
 
 var gr = require('../googleRequests.js');
 
-var geocoderProvider = 'google';
-var httpAdapter = 'https';
-
-var extra = {
-	apiKey: config.googleApiKey,
-	formatter: null
-};
-
-var geocoder = require('node-geocoder')(geocoderProvider, httpAdapter, extra);
-
 var auth = jwt({secret: config.secret, userProperty: 'payload'});
 
 var mongoose = require('mongoose');
 
 var Promise = require('bluebird');
-
-var geocodeAsync = Promise.promisify(require('../googleRequests.js').geocode);
 var eachSeriesAsync = Promise.promisify(require('async').eachSeries);
 
 var User = mongoose.model('User');
@@ -124,16 +111,16 @@ router.post('/importPoints', auth, function(req, res, next) {
 	//      code for queueing service
 	//		data = gr.geocode(entry.address);
 
-			geocoder.geocode(entry.address)
+			gr.asyncGeocode(entry.address)
 				.then(function(data) {
 					var point = {
 						address: entry.address,
 						coordinates: {
-							latitude: data[0].latitude,
-							longitude: data[0].longitude
+							latitude: data.latitude,
+							longitude: data.longitude
 						},
-						placeId: data[0].extra.googlePlaceId,
-						formattedAddress: data[0].formattedAddress
+						placeId: data.extra.googlePlaceId,
+						formattedAddress: data.formattedAddress
 					};
 					polygons.forEach(function(polygon) {
 						var formattedPolygon = [];
@@ -169,6 +156,32 @@ router.post('/importPoints', auth, function(req, res, next) {
 
 });
 
+router.post('/correctPoint', auth, function(req, res, next) {
+	gr.asyncGeocode(req.body.address)
+		.then(function(data){
+			var update = {
+				$set: {
+					address: req.body.address,
+					coordinates: {
+						latitude: data.latitude,
+						longitude: data.longitude
+					},
+					placeId: data.extra.googlePlaceId,
+					formattedAddress: data.formattedAddress
+				}
+			};
+			PointSet.findByIdAndUpdate(req.body._id, update, function(err, data) {
+				if (err) {
+					console.log(err)
+				} else {
+					res.json(data);
+				}
+			});
+		});
+});
+
+router.post
+
 /* TEST ROUTE: GET pointSets */
 router.get('/getPointSets', function(req, res, next) {
 	PointSet
@@ -178,6 +191,13 @@ router.get('/getPointSets', function(req, res, next) {
 			if(err){ return next(err); }
 			res.json(pointsets);
 	})
+});
+
+router.post('/asyncTest', function(req, res, next) {
+	gr.asyncGeocode(req.body.address)
+		.then(function(data){
+			return res.status(200).json(data);
+		});
 });
 
 module.exports = router;
