@@ -123,6 +123,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 						placeId: data.extra.googlePlaceId,
 						formattedAddress: data.formattedAddress
 					});
+					point.save(function (err) {});
 					polygons.forEach(function(polygon) {
 						var formattedPolygon = [];
 						polygon.coordinates.forEach(function(coordinate) {
