@@ -20,6 +20,7 @@ var eachSeriesAsync = Promise.promisify(require('async').eachSeries);
 
 var User = mongoose.model('User');
 var Polygon = mongoose.model('Polygon');
+var Point = mongoose.model('Point');
 var PointSet = mongoose.model('PointSet');
 
 /* GET home page. */
@@ -113,7 +114,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 
 			gr.asyncGeocode(entry.address)
 				.then(function(data) {
-					var point = {
+					var point = new Point({
 						address: entry.address,
 						coordinates: {
 							latitude: data.latitude,
@@ -121,7 +122,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 						},
 						placeId: data.extra.googlePlaceId,
 						formattedAddress: data.formattedAddress
-					};
+					});
 					polygons.forEach(function(polygon) {
 						var formattedPolygon = [];
 						polygon.coordinates.forEach(function(coordinate) {
@@ -135,7 +136,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 					if (pointSet.points.length === entries.length) {
 						pointSet.save(function (err) { /*console.log(err);*/ });
 						return res.status(200).json(pointSet);
-					}
+					};
 				}, function(err) {
 					console.log(err)
 				});
@@ -186,10 +187,19 @@ router.post
 router.get('/getPointSets', function(req, res, next) {
 	PointSet
 		.find()
-		.populate('points.polygon')
-		.exec(function(err, pointsets) {
-			if(err){ return next(err); }
-			res.json(pointsets);
+		.populate('points')
+		.exec(function(err, docs) {
+
+			var options = {
+				path: 'points.polygon',
+				model: 'Polygon'
+			};
+
+			if(err){ return callback(err); }
+			PointSet.populate(docs, options, function(err, pointsets) {
+				if(err) { return callback(err); }
+				res.json(pointsets);
+			});
 	})
 });
 

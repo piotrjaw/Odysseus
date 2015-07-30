@@ -13,6 +13,7 @@ mongoose.connect('mongodb://localhost:27017/odysseus');
 
 require('./models/User');
 require('./models/Polygon');
+require('./models/Point');
 require('./models/PointSet');
 
 require('./config/passport.js');
