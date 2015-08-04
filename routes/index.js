@@ -22,6 +22,7 @@ var User = mongoose.model('User');
 var Polygon = mongoose.model('Polygon');
 var Point = mongoose.model('Point');
 var PointSet = mongoose.model('PointSet');
+var PolygonSet = mongoose.model('PolygonSet');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -72,6 +73,11 @@ router.post('/importPolygons', auth, function(req, res, next) {
 	
 	var entries = Array.prototype.slice.call(req.body.polygons, 0);
 
+	var PolygonSet = new PolygonSet();
+	polygonSet.username = req.payload.username;
+	polygonSet.filename = req.body.filename;
+	polygonSet.importDate = moment();
+	
 	var errorArray = [];
 	
 	entries.forEach(function(entry) {
@@ -124,7 +130,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 						formattedAddress: data.formattedAddress
 					});
 					point.save(function (err) {});
-					polygons.forEach(function(polygon) {
+					polygons.some(function(polygon) {
 						var formattedPolygon = [];
 						polygon.coordinates.forEach(function(coordinate) {
 							formattedPolygon.push([coordinate.latitude, coordinate.longitude]);
@@ -132,6 +138,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 						if(inside([point.coordinates.latitude, point.coordinates.longitude], formattedPolygon)) {
 							point.polygon = polygon;
 						};
+						return point.polygon === polygon;
 					});
 					pointSet.points.push(point);
 					if (pointSet.points.length === entries.length) {

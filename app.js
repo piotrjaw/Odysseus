@@ -15,6 +15,7 @@ require('./models/User');
 require('./models/Polygon');
 require('./models/Point');
 require('./models/PointSet');
+require('./models/PolygonSet');
 
 require('./config/passport.js');
 
