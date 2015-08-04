@@ -13,6 +13,7 @@ var PointSchema = new Schema({
         latitude: Number,
         longitude: Number
     },
+	coordinateType: String,
     polygon: { type: Schema.Types.ObjectId, ref: 'Polygon' }
 });
 

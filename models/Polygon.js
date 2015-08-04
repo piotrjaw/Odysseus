@@ -13,9 +13,7 @@ var Coordinate = new Schema({
 
 var PolygonSchema = new Schema({
     name: String,
-	username: String,
 	coordinates: [Coordinate],
-	importDate: Date
 });
 
 PolygonSchema.methods.getPolygonCoordinates = function(source) {

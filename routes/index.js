@@ -15,6 +15,8 @@ var auth = jwt({secret: config.secret, userProperty: 'payload'});
 
 var mongoose = require('mongoose');
 
+var ObjectId = require('mongodb').ObjectId;
+
 var Promise = require('bluebird');
 var eachSeriesAsync = Promise.promisify(require('async').eachSeries);
 
@@ -73,9 +75,10 @@ router.post('/importPolygons', auth, function(req, res, next) {
 	
 	var entries = Array.prototype.slice.call(req.body.polygons, 0);
 
-	var PolygonSet = new PolygonSet();
+	var polygonSet = new PolygonSet();
 	polygonSet.username = req.payload.username;
 	polygonSet.filename = req.body.filename;
+	polygonSet.customname = req.body.customname;
 	polygonSet.importDate = moment();
 	
 	var errorArray = [];
@@ -84,16 +87,16 @@ router.post('/importPolygons', auth, function(req, res, next) {
 		var polygon = new Polygon();
 
 		polygon.name = entry.name;
-		polygon.username = req.payload.username;
-		polygon.importDate = moment();
 		polygon.coordinates = [];
 
 		polygon.getPolygonCoordinates(entry.coordinates);
 		
-		polygon.save(function (err) {
-			errorArray.push(err);
-			if (errorArray.length === entries.length) { return res.status(200).json({ message: 'OK' }) }
-		});
+		polygon.save(function(err) {});
+		polygonSet.polygons.push(polygon);
+		if (polygonSet.polygons.length === entries.length) {
+			polygonSet.save(function (err) { /*console.log(err);*/ });
+			return res.status(200).json(polygonSet);
+		};
 	});
 });
 
@@ -106,12 +109,17 @@ router.post('/importPoints', auth, function(req, res, next) {
 	var pointSet = new PointSet();
 	pointSet.username = req.payload.username;
 	pointSet.filename = req.body.filename;
+	pointSet.customname = req.body.customname;
 	pointSet.importDate = moment();
 	
-	Polygon.find({
-		'username': req.payload.username
-	}).then(function (result) {
-		var polygons = result;
+	PolygonSet.findOne({
+		'_id': ObjectId(req.body.polygonsetid)
+	})
+	.populate({
+		path: 'polygons'
+	})
+	.then(function (result) {
+		var polygons = result.polygons;
 
 		eachSeriesAsync(entries, function (entry, callback) {
 		
@@ -120,15 +128,27 @@ router.post('/importPoints', auth, function(req, res, next) {
 
 			gr.asyncGeocode(entry.address)
 				.then(function(data) {
-					var point = new Point({
-						address: entry.address,
-						coordinates: {
-							latitude: data.latitude,
-							longitude: data.longitude
-						},
-						placeId: data.extra.googlePlaceId,
-						formattedAddress: data.formattedAddress
-					});
+					if(data === undefined) {
+						var point = new Point({
+							address: entry.address,
+							coordinateType: 'empty'
+						});
+					} else {
+						var point = new Point({
+							address: entry.address,
+							coordinates: {
+								latitude: data.latitude,
+								longitude: data.longitude
+							},
+							placeId: data.extra.googlePlaceId,
+							formattedAddress: data.formattedAddress
+						});
+						if(data.streetName === undefined) {
+							point.coordinateType= 'partial';
+						} else {
+							point.coordinateType= 'full';
+						}
+					}
 					point.save(function (err) {});
 					polygons.some(function(polygon) {
 						var formattedPolygon = [];
@@ -209,6 +229,27 @@ router.get('/getPointSets', function(req, res, next) {
 				res.json(pointsets);
 			});
 	})
+});
+
+/* TEST ROUTE: GET polygonSets */
+router.get('/getPolygonSets', function(req, res, next) {
+	PolygonSet
+		.find()
+		.populate('polygons')
+		.exec(function(err, docs) {
+			if(err){ return callback(err); }
+			res.json(docs);
+	})
+});
+
+router.get('/getPointSets2', function(req, res, next) {
+	PointSet
+		.find()
+		.populate('points')
+		.exec(function(err, docs) {
+			if(err) { return callback(err); }
+			res.json(docs);
+		});
 });
 
 router.post('/asyncTest', function(req, res, next) {

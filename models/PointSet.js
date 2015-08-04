@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 var PointSetSchema = new Schema({
 	username: String,
 	filename: String,
+	customname: String,
 	importDate: Date,
 	points: [{ type: Schema.Types.ObjectId, ref: 'Point'}]
 });
