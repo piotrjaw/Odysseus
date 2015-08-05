@@ -9,6 +9,7 @@ var PointSchema = new Schema({
     address: String,
     formattedAddress: String,
     placeId: String,
+	customId: String,
     coordinates: {
         latitude: Number,
         longitude: Number

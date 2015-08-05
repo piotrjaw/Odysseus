@@ -136,6 +136,7 @@ router.post('/importPoints', auth, function(req, res, next) {
 					} else {
 						var point = new Point({
 							address: entry.address,
+							customId: entry.customid,
 							coordinates: {
 								latitude: data.latitude,
 								longitude: data.longitude
@@ -184,6 +185,10 @@ router.post('/importPoints', auth, function(req, res, next) {
 	});
 
 });
+
+router.post('/exportPoints', auth, function(req, res, next) {
+	
+})
 
 router.post('/correctPoint', auth, function(req, res, next) {
 	gr.asyncGeocode(req.body.address)
