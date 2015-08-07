@@ -9,6 +9,7 @@ var UserSchema = new mongoose.Schema({
 	email: {type: String, lowercase: true, unique: true},
 	hash: String,
 	salt: String,
+	userType: {type: String, default: 'plainuser'}
 	creationDate: Date
 });
 
